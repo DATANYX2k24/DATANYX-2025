@@ -1,4 +1,4 @@
-import Image from "next/image";
+// import Image from "next/image"; // Currently unused
 
 export default function Header() {
   return (

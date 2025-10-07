@@ -15,7 +15,8 @@ const GalaxyParticles: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     // Scene setup
     const scene = new THREE.Scene();
@@ -34,7 +35,7 @@ const GalaxyParticles: React.FC = () => {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    containerRef.current.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
 
     // Galaxy parameters
     const parameters = {
@@ -56,7 +57,10 @@ const GalaxyParticles: React.FC = () => {
       const positions = new Float32Array(parameters.count * 3);
       const colors = new Float32Array(parameters.count * 3);
 
+      // Colors for potential future use
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const colorInside = new THREE.Color(parameters.insideColor);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const colorOutside = new THREE.Color(parameters.outsideColor);
 
       for (let i = 0; i < parameters.count; i++) {
@@ -199,8 +203,9 @@ const GalaxyParticles: React.FC = () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleScroll);
         
-        if (containerRef.current && sceneRef.current.renderer.domElement) {
-          containerRef.current.removeChild(sceneRef.current.renderer.domElement);
+        // Use stored container reference to avoid stale closure
+        if (container && sceneRef.current.renderer.domElement) {
+          container.removeChild(sceneRef.current.renderer.domElement);
         }
         
         sceneRef.current.renderer.dispose();

@@ -39,7 +39,8 @@ let resizeListener: (() => void) | null = null;
 let prefersReducedMotion = false;
 let isDisposed = false;
 
-// Smoothstep function for easing
+// Smoothstep function for easing (currently unused but kept for future use)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function smoothstep(min: number, max: number, value: number): number {
   const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
   return x * x * (3 - 2 * x);
@@ -142,7 +143,7 @@ async function createMoonMaterial(options: MoonOptions): Promise<THREE.Material>
       displacementTexture.wrapS = displacementTexture.wrapT = THREE.RepeatWrapping;
     }
     
-    const materialConfig: any = {
+    const materialConfig: Record<string, unknown> = {
       color: colorTexture ? 0xffffff : 0x999999,
     };
     
@@ -209,7 +210,7 @@ function handleResize(camera: THREE.Camera, renderer: THREE.WebGLRenderer) {
 // Debug function
 function exposeDebugFunction() {
   if (typeof window !== 'undefined') {
-    (window as any).__moonSetProgress = (progress: number) => {
+    (window as unknown as Record<string, unknown>).__moonSetProgress = (progress: number) => {
       targetProgress = Math.max(0, Math.min(1, progress));
       updateMoonTransform(targetProgress);
     };
@@ -352,7 +353,7 @@ export async function initMoon(
       
       // Clear debug function
       if (typeof window !== 'undefined') {
-        delete (window as any).__moonSetProgress;
+        delete (window as unknown as Record<string, unknown>).__moonSetProgress;
       }
       
       console.log('Moon effect disposed');

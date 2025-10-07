@@ -59,6 +59,7 @@ export default function Home() {
           transition: scrollProgress === 0 ? 'none' : 'opacity 0.1s ease-out'
         }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src="/assets/Landing page website (7).png"
           alt="DATANYX Logo"

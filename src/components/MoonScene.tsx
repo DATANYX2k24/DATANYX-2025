@@ -108,7 +108,7 @@ const MoonScene: React.FC = () => {
           bumpMap: moonTextureMap,
           bumpScale: 0.015,
         });
-      } catch (error) {
+      } catch {
         console.log('Moon texture not found, using procedural material');
         // Fallback to procedural moon-like material
         moonMaterial = new THREE.MeshStandardMaterial({ 
