@@ -14,47 +14,110 @@ export const WireframeSphere = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
+    // Get responsive parameters based on screen size
+    const getResponsiveParams = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const minDimension = Math.min(width, height);
+      
+      if (width <= 480) {
+        // Very small mobile
+        return {
+          radius: minDimension * 0.12,
+          numPoints: 200,
+          connectionDistance: 0.5,
+          lineWidth: 0.3,
+          pointSize: 1,
+          glowIntensity: 5
+        };
+      } else if (width <= 768) {
+        // Mobile
+        return {
+          radius: minDimension * 0.13,
+          numPoints: 250,
+          connectionDistance: 0.45,
+          lineWidth: 0.4,
+          pointSize: 1.2,
+          glowIntensity: 7
+        };
+      } else if (width <= 1024) {
+        // Tablet
+        return {
+          radius: minDimension * 0.14,
+          numPoints: 300,
+          connectionDistance: 0.4,
+          lineWidth: 0.5,
+          pointSize: 1.5,
+          glowIntensity: 8
+        };
+      } else {
+        // Desktop
+        return {
+          radius: minDimension * 0.15,
+          numPoints: 400,
+          connectionDistance: 0.4,
+          lineWidth: 0.5,
+          pointSize: 1.5,
+          glowIntensity: 10
+        };
+      }
+    };
+
+    let currentParams = getResponsiveParams();
+    const points: { x: number; y: number; z: number }[] = [];
+    const connections: [number, number][] = [];
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+    // Function to regenerate sphere with current parameters
+    const regenerateSphere = () => {
+      points.length = 0;
+      connections.length = 0;
+      
+      // Create sphere points (fibonacci sphere)
+      for (let i = 0; i < currentParams.numPoints; i++) {
+        const theta = 2 * Math.PI * i / goldenRatio;
+        const phi = Math.acos(1 - 2 * (i + 0.5) / currentParams.numPoints);
+        
+        points.push({
+          x: currentParams.radius * Math.sin(phi) * Math.cos(theta),
+          y: currentParams.radius * Math.sin(phi) * Math.sin(theta),
+          z: currentParams.radius * Math.cos(phi),
+        });
+      }
+
+      // Create connections between nearby points
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          const dx = points[i].x - points[j].x;
+          const dy = points[i].y - points[j].y;
+          const dz = points[i].z - points[j].z;
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          
+          if (distance < currentParams.radius * currentParams.connectionDistance) {
+            connections.push([i, j]);
+          }
+        }
+      }
+    };
+
+    // Set canvas size and handle resize
     const setCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      
+      // Check if responsive parameters need updating
+      const newParams = getResponsiveParams();
+      if (JSON.stringify(newParams) !== JSON.stringify(currentParams)) {
+        currentParams = newParams;
+        regenerateSphere();
+      }
     };
+
     setCanvasSize();
     window.addEventListener("resize", setCanvasSize);
 
-    // Sphere parameters
-    const radius = Math.min(window.innerWidth, window.innerHeight) * 0.15;
-    const points: { x: number; y: number; z: number }[] = [];
-    const connections: [number, number][] = [];
-
-    // Create sphere points (fibonacci sphere)
-    const numPoints = 400;
-    const goldenRatio = (1 + Math.sqrt(5)) / 2;
-    
-    for (let i = 0; i < numPoints; i++) {
-      const theta = 2 * Math.PI * i / goldenRatio;
-      const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
-      
-      points.push({
-        x: radius * Math.sin(phi) * Math.cos(theta),
-        y: radius * Math.sin(phi) * Math.sin(theta),
-        z: radius * Math.cos(phi),
-      });
-    }
-
-    // Create connections between nearby points
-    for (let i = 0; i < points.length; i++) {
-      for (let j = i + 1; j < points.length; j++) {
-        const dx = points[i].x - points[j].x;
-        const dy = points[i].y - points[j].y;
-        const dz = points[i].z - points[j].z;
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        
-        if (distance < radius * 0.4) {
-          connections.push([i, j]);
-        }
-      }
-    }
+    // Initial generation
+    regenerateSphere();
 
     // Handle scroll
     const handleScroll = () => {
@@ -114,7 +177,7 @@ export const WireframeSphere = () => {
         
         // Calculate opacity based on z-depth
         const avgZ = (p1.z + p2.z) / 2;
-        const opacity = Math.max(0.1, Math.min(0.8, (avgZ + radius) / (radius * 2)));
+        const opacity = Math.max(0.1, Math.min(0.8, (avgZ + currentParams.radius) / (currentParams.radius * 2)));
         
         // Gradient based on position
         const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
@@ -122,7 +185,7 @@ export const WireframeSphere = () => {
         gradient.addColorStop(1, `hsla(280, 85%, 65%, ${opacity})`);
         
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = currentParams.lineWidth;
         ctx.beginPath();
         ctx.moveTo(p1.x, p1.y);
         ctx.lineTo(p2.x, p2.y);
@@ -131,13 +194,13 @@ export const WireframeSphere = () => {
 
       // Draw points
       projected.forEach((point, i) => {
-        const opacity = Math.max(0.2, Math.min(1, (point.z + radius) / (radius * 2)));
-        const size = 1.5 + (point.z + radius) / (radius * 2);
+        const opacity = Math.max(0.2, Math.min(1, (point.z + currentParams.radius) / (currentParams.radius * 2)));
+        const size = currentParams.pointSize + (point.z + currentParams.radius) / (currentParams.radius * 2);
         
         // Alternate colors
         const hue = i % 2 === 0 ? 190 : 280;
         ctx.fillStyle = `hsla(${hue}, 95%, 65%, ${opacity})`;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = currentParams.glowIntensity;
         ctx.shadowColor = `hsla(${hue}, 95%, 65%, ${opacity})`;
         
         ctx.beginPath();

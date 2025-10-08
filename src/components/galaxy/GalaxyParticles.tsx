@@ -39,7 +39,7 @@ const GalaxyParticles: React.FC = () => {
 
     // Galaxy parameters
     const parameters = {
-      count: 500000,  // Much denser particle field
+      count: 450000,  // Much denser particle field
       size: 0.03,
       radius: 80,
       branches: 6,    // More branches for denser coverage

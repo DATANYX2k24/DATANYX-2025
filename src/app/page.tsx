@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import GalaxyParticles from '../components/galaxy/GalaxyParticles';
 import { WireframeSphere } from '../components/WireframeSphere';
+import { NavbarDemo } from '../components/NavbarDemo';
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
@@ -23,6 +24,9 @@ export default function Home() {
 
   return (
     <div className="relative">
+      {/* Navbar - Topmost layer */}
+      <NavbarDemo />
+      
       {/* Galaxy Background - Fixed */}
       <GalaxyParticles />
       
